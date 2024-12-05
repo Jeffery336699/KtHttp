@@ -2,6 +2,7 @@ package com.boycoder.kthttp
 
 import com.boycoder.kthttp.annotations.Field
 import com.boycoder.kthttp.annotations.GET
+import com.boycoder.kthttp.bean.RepoList
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -10,10 +11,10 @@ import java.lang.reflect.Proxy
 
 
 interface ApiServiceV2 {
-    @GET("/repo")
+    @GET("/search/users")
     fun repos(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): RepoList
 }
 
@@ -22,7 +23,7 @@ object KtHttpV2 {
 
     private val okHttpClient by lazy { OkHttpClient() }
     private val gson by lazy { Gson() }
-    var baseUrl = "https://trendings.herokuapp.com"
+    var baseUrl = "https://api.github.com"
 
     inline fun <reified T> create(): T {
         return Proxy.newProxyInstance(
@@ -61,8 +62,7 @@ object KtHttpV2 {
 
 fun main() {
     val data: RepoList = KtHttpV2.create<ApiServiceV2>().repos(
-        lang = "Kotlin",
-        since = "weekly"
+        q = "Jeffery336699", sort = "stars"
     )
 
     println(data)

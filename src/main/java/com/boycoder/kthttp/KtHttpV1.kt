@@ -2,6 +2,7 @@ package com.boycoder.kthttp
 
 import com.boycoder.kthttp.annotations.Field
 import com.boycoder.kthttp.annotations.GET
+import com.boycoder.kthttp.bean.RepoList
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -16,35 +17,35 @@ import kotlin.reflect.jvm.javaMethod
  * https://trendings.herokuapp.com/repo?lang=java&since=weekly
  */
 interface ApiService {
-    @GET("/repo")
+    @GET("/search/users")
     fun repos(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): RepoList
 }
 
-data class RepoList(
-    var count: Int?,
-    var items: List<Repo>?,
-    var msg: String?
-)
-
-data class Repo(
-    var added_stars: String?,
-    var avatars: List<String>?,
-    var desc: String?,
-    var forks: String?,
-    var lang: String?,
-    var repo: String?,
-    var repo_link: String?,
-    var stars: String?
-)
+// data class RepoList(
+//     var count: Int?,
+//     var items: List<Repo>?,
+//     var msg: String?
+// )
+//
+// data class Repo(
+//     var added_stars: String?,
+//     var avatars: List<String>?,
+//     var desc: String?,
+//     var forks: String?,
+//     var lang: String?,
+//     var repo: String?,
+//     var repo_link: String?,
+//     var stars: String?
+// )
 
 object KtHttpV1 {
 
     private var okHttpClient: OkHttpClient = OkHttpClient()
     private var gson: Gson = Gson()
-    var baseUrl = "https://trendings.herokuapp.com"
+    var baseUrl = "https://api.github.com"
 
     fun <T> create(service: Class<T>): T {
         return Proxy.newProxyInstance(
@@ -100,7 +101,7 @@ object KtHttpV1 {
 
 fun main() {
     val api: ApiService = KtHttpV1.create(ApiService::class.java)
-    val data: RepoList = api.repos(lang = "Kotlin", since = "weekly")
+    val data: RepoList = api.repos(q = "Jeffery336699", sort = "stars")
     println(data)
 }
 

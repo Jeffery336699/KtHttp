@@ -2,6 +2,7 @@ package com.boycoder.kthttp
 
 import com.boycoder.kthttp.annotations.Field
 import com.boycoder.kthttp.annotations.GET
+import com.boycoder.kthttp.bean.RepoList
 import com.google.gson.Gson
 import com.google.gson.internal.`$Gson$Types`.getRawType
 import kotlinx.coroutines.*
@@ -17,26 +18,27 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Proxy
 import kotlin.concurrent.thread
 
-// https://trendings.herokuapp.com/repo?lang=java&since=weekly
+// https://trendings.herokuapp.com/repo?lang=java&since=weekly (已失效)
+// https://api.github.com/search/users?q=Jeffery336699&sort=stars
 
 interface ApiServiceV5 {
-    @GET("/repo")
+    @GET("/search/users")
     fun repos(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): KtCall<RepoList>
 
-    @GET("/repo")
+    @GET("/search/users")
     fun reposSync(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): RepoList
 
 
-    @GET("/repo")
+    @GET("/search/users")
     fun reposFlow(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): Flow<RepoList>
 }
 
@@ -44,7 +46,7 @@ object KtHttpV5 {
 
     private var okHttpClient: OkHttpClient = OkHttpClient()
     private var gson: Gson = Gson()
-    var baseUrl = "https://trendings.herokuapp.com"
+    var baseUrl = "https://api.github.com"
 
     fun <T : Any> create(service: Class<T>): T {
         return Proxy.newProxyInstance(
@@ -193,15 +195,16 @@ fun <T : Any> KtCall<T>.asFlowTest(value: T): Flow<T> = callbackFlow {
 
 fun main() = runBlocking {
     testAsFlow()
+    logX("the end.")
 }
 
 private suspend fun testAsFlow() =
     KtHttpV5.create(ApiServiceV5::class.java)
-        .repos(lang = "Kotlin", since = "weekly")
+        .repos(q = "Jeffery336699", sort = "stars")
         .asFlow1()
         .catch { println("Catch: $it") }
         .collect {
-            println(it)
+            println("size:${it.items.size}")
         }
 
 /**

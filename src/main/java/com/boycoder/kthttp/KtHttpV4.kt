@@ -80,7 +80,7 @@ fun main() = runBlocking {
     val start = System.currentTimeMillis()
     val deferred = async {
         KtHttpV3.create(ApiServiceV3::class.java)
-            .repos(lang = "Kotlin", since = "weekly")
+            .repos(q = "Jeffery336699", sort = "stars")
             .await()
     }
 

@@ -2,6 +2,7 @@ package com.boycoder.kthttp
 
 import com.boycoder.kthttp.annotations.Field
 import com.boycoder.kthttp.annotations.GET
+import com.boycoder.kthttp.bean.RepoList
 import com.google.gson.Gson
 import com.google.gson.internal.`$Gson$Types`.getRawType
 import kotlinx.coroutines.*
@@ -12,26 +13,27 @@ import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Proxy
 
-// https://trendings.herokuapp.com/repo?lang=java&since=weekly
+// https://trendings.herokuapp.com/repo?lang=java&since=weekly (已失效)
+// https://api.github.com/search/users?q=Jeffery336699&sort=stars
 
 interface ApiServiceV6 {
-    @GET("/repo")
+    @GET("/search/users")
     fun repos(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): KtCall<RepoList>
 
-    @GET("/repo")
+    @GET("/search/users")
     fun reposSync(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): RepoList
 
 
-    @GET("/repo")
+    @GET("/search/users")
     fun reposFlow(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): Flow<RepoList>
 }
 
@@ -39,7 +41,7 @@ object KtHttpV6 {
 
     private var okHttpClient: OkHttpClient = OkHttpClient()
     private var gson: Gson = Gson()
-    var baseUrl = "https://trendings.herokuapp.com"
+    var baseUrl = "https://api.github.com"
 
     fun <T : Any> create(service: Class<T>): T {
         return Proxy.newProxyInstance(
@@ -77,7 +79,7 @@ object KtHttpV6 {
                 }
             }
         }
-
+        logX("url:$url")
         val request = Request.Builder()
             .url(url)
             .build()
@@ -126,24 +128,25 @@ object KtHttpV6 {
 fun main() {
     // 协程作用域外
     val flow = KtHttpV6.create(ApiServiceV6::class.java)
-        .reposFlow(lang = "Kotlin", since = "weekly")
+        .reposFlow(q = "Jeffery336699", sort = "stars")
         .flowOn(Dispatchers.IO)
         .catch { println("Catch: $it") }
 
     runBlocking {
         // 协程作用域内
         flow.collect {
-            logX("${it.count}")
+            logX("collect login:${it.items[0].login}")
         }
     }
+    logX("the end..")
 }
 
 
 private suspend fun testFlow() =
     KtHttpV6.create(ApiServiceV6::class.java)
-        .reposFlow(lang = "Kotlin", since = "weekly")
+        .reposFlow(q = "Jeffery336699", sort = "stars")
         .flowOn(Dispatchers.IO)
         .catch { println("Catch: $it") }
         .collect {
-            logX("${it.count}")
-        }
+            logX("${it.items.size}")
+}

@@ -2,6 +2,7 @@ package com.boycoder.kthttp
 
 import com.boycoder.kthttp.annotations.Field
 import com.boycoder.kthttp.annotations.GET
+import com.boycoder.kthttp.bean.RepoList
 import com.google.gson.Gson
 import com.google.gson.internal.`$Gson$Types`.getRawType
 import okhttp3.Call
@@ -47,16 +48,16 @@ class KtCall<T: Any>(
 }
 
 interface ApiServiceV3 {
-    @GET("/repo")
+    @GET("/search/users")
     fun repos(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): KtCall<RepoList>
 
-    @GET("/repo")
+    @GET("/search/users")
     fun reposSync(
-        @Field("lang") lang: String,
-        @Field("since") since: String
+        @Field("q") q: String,
+        @Field("sort") sort: String
     ): RepoList
 }
 
@@ -64,7 +65,7 @@ object KtHttpV3 {
 
     private var okHttpClient: OkHttpClient = OkHttpClient()
     private var gson: Gson = Gson()
-    var baseUrl = "https://trendings.herokuapp.com"
+    var baseUrl = "https://api.github.com"
 
     fun <T: Any> create(service: Class<T>): T {
         return Proxy.newProxyInstance(
@@ -136,14 +137,13 @@ fun main() {
 
 private fun testSync() {
     val api: ApiServiceV3 = KtHttpV3.create(ApiServiceV3::class.java)
-    val data: RepoList = api.reposSync(lang = "Kotlin", since = "weekly")
+    val data: RepoList = api.reposSync(q = "Jeffery336699", sort = "stars")
     println(data)
 }
 
 private fun testAsync() {
     KtHttpV3.create(ApiServiceV3::class.java).repos(
-        lang = "Kotlin",
-        since = "weekly"
+        q = "Jeffery336699", sort = "stars"
     ).call(object : Callback<RepoList> {
         override fun onSuccess(data: RepoList) {
             println(data)
